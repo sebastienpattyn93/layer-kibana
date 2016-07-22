@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -ex
+
+DASH=$(action-get dashboard)
+
+if [[ -d ${CHARM_DIR}/dashboards/${DASH} ]]; then
+ cd  $CHARM_DIR/dashboards/$DASH
+ $CHARM_DIR/dashboards/$DASH/load.sh
+ exit 0
+fi

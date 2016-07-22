@@ -1,0 +1,11 @@
+"load-dashboard":
+  "description": |
+    Load a single Elasticsearch visualization dashboard.
+    Dashboards must exist in 'dashboards' directory and contain a load.sh
+    script to populate into Elasticsearch.  The only dashboard currently
+    supported out-of-the-box is "beats".
+  "options":
+    "dashboard":
+      "type": "string"
+      "description": "Name of dashboard to load"
+      "default": "beats"
