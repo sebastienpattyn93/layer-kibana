@@ -139,8 +139,7 @@ def rerender_es_conf():
     remove_state('kibana.available')
 
 
-@when_not('elasticsearch.available',
-          'kibana.available')
+@when_not('kibana.available')
 @when('elasticsearch.departed')
 def set_no_es_block():
     """If no elasticsearch, block and exit
