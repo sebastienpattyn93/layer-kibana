@@ -2,18 +2,29 @@
 # Copyright (c) 2016, James Beedy <jamesbeedy@gmail.com>
 
 import os
+from sys import exit as quit
 from subprocess import call
-from charms.reactive import when, when_not, set_state
+
+from charms.reactive import (when,
+                             when_not,
+                             set_state,
+                             remove_state)
+
 from charmhelpers.core import hookenv
-from charmhelpers.core.host import service_restart
-from charmhelpers.core.host import service_running
-from charmhelpers.core.host import service_start
+
+from charmhelpers.core.host import (service_restart,
+                                    service_running,
+                                    service_start)
+
 from charmhelpers.core.templating import render
 
 from charms.layer.nginx import configure_site
+
 import charms.apt
 
+
 config = hookenv.config()
+
 
 KIBANA_CONF = 'kibana.yml'
 KIBANA_CONF_DIR = '/opt/kibana/config'
@@ -34,8 +45,8 @@ def _render_kibana_conf(ctxt):
            context=ctxt)
 
 
-@when_not('kibana.installed')
-@when_not('apt.installed.kibana')
+@when_not('kibana.installed',
+          'apt.installed.kibana')
 def install_kibana():
     hookenv.status_set('maintenance',
                        'Installing kibana')
@@ -48,11 +59,11 @@ def install_kibana():
     set_state('kibana.installed')
 
 
-@when('kibana.installed')
-@when('nginx.available')
-@when('apt.installed.kibana')
-@when_not('apt.queued_installs')
-@when_not('kibana.initialized')
+@when('kibana.installed',
+      'nginx.available',
+      'apt.installed.kibana')
+@when_not('apt.queued_installs',
+          'kibana.initialized')
 def configure_kibana_nginx():
     hookenv.status_set('maintenance',
                        'Configuring kibana')
@@ -80,15 +91,18 @@ def configure_kibana_nginx():
 
     # Open kibana frontend port
     hookenv.open_port(config['port'])
+
+    # Set active status
     hookenv.status_set('active',
                        'kibana available')
     # Set state
     set_state('kibana.initialized')
 
 
-@when('nginx.available')
-@when('kibana.initialized')
-@when('elasticsearch.available')
+@when('nginx.available',
+      'kibana.initialized',
+      'elasticsearch.available')
+@when_not('kibana.available')
 def elastic_search_available(elasticsearch):
     hookenv.status_set('maintenance',
                        'Configuring kibana for elasticsearch')
@@ -110,7 +124,27 @@ def elastic_search_available(elasticsearch):
     set_state('kibana.available')
 
 
-@when('kibana.initialized')
-@when('nginx.available', 'website.available')
+@when('kibana.initialized',
+      'nginx.available', 
+      'website.available')
 def configure_website(website):
     website.configure(port=config['port'])
+
+
+@when('elasticsearch.departed')
+def rerender_es_conf():
+    hookenv.status_set('maintenance',
+                       'ES member departed cluster, '
+                       'reconfiguring Kibana for ES')
+    remove_state('kibana.available')
+
+
+@when_not('elasticsearch.available',
+          'kibana.available')
+@when('elasticsearch.departed')
+def set_no_es_block():
+    """If no elasticsearch, block and exit
+    """
+    hookenv.status_set('blocked',
+                       'Need relation to elasticsearch')
+    quit(1)

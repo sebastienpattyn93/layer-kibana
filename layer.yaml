@@ -1,19 +1,7 @@
-"options":
-  "nginx": {}
-  "kibana": {}
-  "basic":
-    "use_venv": !!bool "false"
-    "packages": []
-    "include_system_packages": !!bool "false"
-"includes":
-- "layer:basic"
-- "interface:http"
-- "layer:basic"
-- "interface:http"
-- "layer:basic"
-- "layer:nginx"
-- "layer:apt"
-- "interface:elasticsearch"
-- "interface:http"
-"repo": "https://github.com/jamesbeedy/layer-kibana.git"
-"is": "kibana"
+includes:
+- layer:basic
+- interface:http
+- layer:nginx
+- layer:apt
+- interface:elasticsearch
+repo: https://github.com/jamesbeedy/layer-kibana.git
