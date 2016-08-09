@@ -1,0 +1,13 @@
+name: kibana
+summary: Explore and visualize your Elasticsearch data.
+maintainer: James Beedy <jamesbeedy@gmail.com>
+description: This layer provides kibana, the data visualization front end. \n
+requires:
+  elasticsearch:
+    interface: elasticsearch
+provides:
+  website:
+    interface: http
+series:
+- trusty
+- xenial
